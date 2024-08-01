@@ -16,6 +16,10 @@ cat web/core/index.html > build/index.html
 #Переходимо у директорію з якої ми будемо виконувати макроси
 cd web
 
+#Згенеруємо файли секцій для користувацького інтерфейсу
+mkdir -p generated
+../macro/gensections.awk user/user.js
+
 #Виконуємо всі необхідні макропідстановки у скопійований індекс
 ../macro/includefile.awk -i inplace ../build/index.html
 ../macro/environment.awk -i inplace ../build/index.html

@@ -1,3 +1,71 @@
+@SECTION:style
+.freq-fields {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.freq-field {
+	flex: 30%;
+	width: 2em;
+	box-sizing: border-box;
+	border: none;
+	margin: 0.25em;
+	-webkit-appearance: none;
+	-moz-appearance: textfield;
+	font-size: 1em;
+	background: #8e8e8e73;
+	color: #fff;
+	font-weight: bold;
+	text-align: center;
+}
+			
+@SECTION:html
+<!-- USER PAGE AND WIDGETS -->
+<h1 style="text-align: center;" data-template="^{LC_WELCOME}"></h1>
+
+<div class="help dialog" id="auto-calib-help" data-template="^{LC_AUTOCALIB_HELP}"></div>
+
+<div class="dash">
+	<div>
+		<div class="info" data-template="^{LC_FREQUENCIES}"></div>
+		<div class="freq-fields" id="frequency-fields"></div>
+	</div>
+</div>
+
+<div class="dash">	
+	<div>
+		<div class="info" data-template="^{LC_CALIBRATION}"></div>
+		<div class="freq-fields" id="calibration-fields"></div>
+	</div>
+	
+	<div class="button" id="auto-calib" data-help="auto-calib-help" data-template="^{LC_AUTO}{LC_CALIBRATION}"></div>
+	<div class="button" id="drop-calib" data-template="^{LC_DROP}"></div>
+</div>
+
+<div class="dash">
+	<div>
+		<div class="info" data-template="^{LC_SENSITIVITY}"></div>
+		<div class="freq-fields" id="sensitivity-fields"></div>
+	</div>
+	
+	<div class="gap"></div>
+	
+	<div>
+		<div class="info" data-template="^{LC_FORALL}"></div>
+		<div class="freq-fields" id="sens-for-all-field"></div>
+	</div>
+	<div class="button" data-template="^{LC_DROP}"></div>
+</div>
+
+<div class="dash">
+	<div>
+		<div class="info" data-template="^{LC_LOG}" id="log"></div>
+		<div class="freq-fields" style="flex-wrap: nowrap; overflow: hidden;" id="log-fields"></div>
+	</div>
+</div>
+		
+@SECTION:script
 defaultLanguage = 'uk'
 globalLanguage = 'uk';
 
