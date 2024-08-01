@@ -1,4 +1,4 @@
-const serverAddress = @ENV_WS_SERVER_ADDRESS;
+const serverAddress = @ENV:WEBSOCKET_SERVER_ADDRESS;
 let serverIsOnline = false;
 let socket;
 

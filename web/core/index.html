@@ -93,7 +93,7 @@
 		<div class="gap"></div>
 		<footer class="footer">
 			<button id="help-button" class="help-button">help</button>
-			<div style="margin-left: auto;" class="with-help" data-help="This is a version of software!">@GIT_VERSION</div>
+			<div style="margin-left: auto;" class="with-help" data-help="This is a version of software!">@ENV:GIT_REPO_VERSION</div>
 		</footer>
 		
 		<!-- SCRIPTS -->
@@ -108,7 +108,7 @@
 		
 		<!-- USER SCRIPTS -->
 		<script>
-			@INCLUDE:user.js
+			@INCLUDE:user/user.js
 		</script>
 	</body>
 </html>

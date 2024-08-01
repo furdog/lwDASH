@@ -1,23 +1,23 @@
 #!/bin/bash
-sed -e "s/@GIT_VERSION/$(git describe --tags)/" \
-interface.html > interface.built.html
 
-#Цей скрипт містить макроси які використовуються для попередньої обробки текстових файлів.
+#Встановлюємо необхідні змінні середовища
+export GIT_REPO_VERSION=$(git describe --tags)
 
-#Директива @include=file.extension заміняє себе на вміст файлу file.extension 
-awk -i inplace '
-{
-    while (match($0, /@INCLUDE:[^ \t\n]+/)) {
-        include_directive = substr($0, RSTART, RLENGTH)
-        filename = substr(include_directive, 10)  # видаляємо "@INCLUDE:"
-        
-        # Зчитуємо вміст файлу
-        system("cat " filename)
-        
-        # Заміна директиви на порожній рядок
-        $0 = substr($0, 1, RSTART-1) substr($0, RSTART+RLENGTH)
-    }
-    print
-}' interface.built.html
+if [ -z "${WEBSOCKET_SERVER_ADDRESS+x}" ]; then
+        export WEBSOCKET_SERVER_ADDRESS='"ws://localhost:8765"'
+fi
 
-./core/env.awk -i inplace interface.built.html
+#Створюємо директорію, куди будемо класти всі необхідні файли збірки
+mkdir -p build
+
+#Копіюємо індекс у директорію для збірки
+cat web/core/index.html > build/index.html
+
+#Переходимо у директорію з якої ми будемо виконувати макроси
+cd web
+
+#Виконуємо всі необхідні макропідстановки у скопійований індекс
+../macro/includefile.awk -i inplace ../build/index.html
+../macro/environment.awk -i inplace ../build/index.html
+
+read -p "Press any key to continue "
