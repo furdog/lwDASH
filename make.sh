@@ -17,11 +17,10 @@ cat web/core/index.html > build/index.html
 cd web
 
 #Згенеруємо файли секцій для користувацького інтерфейсу
+rm -rf generated 2> /dev/null
 mkdir -p generated
 ../macro/gensections.awk user/user.js
 
 #Виконуємо всі необхідні макропідстановки у скопійований індекс
 ../macro/includefile.awk -i inplace ../build/index.html
 ../macro/environment.awk -i inplace ../build/index.html
-
-read -p "Press any key to continue "
