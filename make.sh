@@ -12,8 +12,6 @@ if [ ! -f "$1" ]; then
 	exit 1
 fi
 
-cp -u "$1" web/user.js
-
 #Встановлюємо необхідні змінні середовища
 export GIT_REPO_VERSION=$(git describe --tags)
 
@@ -27,13 +25,13 @@ mkdir -p build
 #Копіюємо індекс у директорію для збірки
 cat web/core/index.html > build/index.html
 
+#Згенеруємо файли секцій для користувацького інтерфейсу
+rm -rf web/generated 2> /dev/null
+mkdir -p web/generated
+macro/gensections.awk "$1"
+
 #Переходимо у директорію з якої ми будемо виконувати макроси
 cd web
-
-#Згенеруємо файли секцій для користувацького інтерфейсу
-rm -rf generated 2> /dev/null
-mkdir -p generated
-../macro/gensections.awk user.js
 
 #Виконуємо всі необхідні макропідстановки у скопійований індекс
 ../macro/includefile.awk -i inplace ../build/index.html

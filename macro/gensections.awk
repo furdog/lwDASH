@@ -13,6 +13,6 @@
 {
     # Якщо є активна секція, додаємо рядок у відповідний файл
     if (section_name) {
-        print $0 >> "generated/" section_name
+        print $0 >> "web/generated/" section_name
     }
 }
