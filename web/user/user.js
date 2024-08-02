@@ -83,7 +83,8 @@ dataTemplatesAppendLocale({
 			   "вони налаштовуються в децибелах(dB) відносно рівня фонового шуму. " +
 			   "За замовчуванням приймачі отримують RSSI в децибел/мілліватт(dBm) " +
 			   "Якщо рівень шуму наприклад -100dBm, то нове калібровочне значення буде рівне " +
-			   "+100dBm, а загальний RSSI буде рівний 0dBm"
+			   "+100dBm, а загальний RSSI буде рівний 0dBm",
+	LC_UPDATE: "оновлення прошивки"
 }, 'uk');
 
 const LED_COUNT = 6;
@@ -153,6 +154,24 @@ function handleDropCalibration()
 _("auto-calib").addEventListener('click', handleAutoCalibration);
 _("drop-calib").addEventListener('click', handleDropCalibration);
 
+//FIRMWARE UPDATE
+@SECTION:html
+<div class="dash">
+	<div class="info" data-template="^{LC_UPDATE}" id="log"></div>
+	<div id="firmwareupdate"></div>
+</div>
+@SECTION:script
+var update_firmware = _("firmwareupdate")
+
+update_firmware.style.flexDirection = "column";
+update_firmware.style.flex = "100%";
+update_firmware.innerHTML = '\
+	<iframe name= "hidden-iframe" style= "display: none;"></iframe>\
+	<form method= "post" enctype= "multipart/form-data" target = "hidden-iframe" action = "update" style= "display:contents">\
+		<input type= "file" class = "layout" id= "file" name= "file">\
+		<button class = "button">Підтвердити</button>\
+	</form>'
+	
 //dataTemplates["DB_LOG"] = "";
 
 function receiveMessage(type, message) {

@@ -4,7 +4,7 @@
 export GIT_REPO_VERSION=$(git describe --tags)
 
 if [ -z "${WEBSOCKET_SERVER_ADDRESS+x}" ]; then
-        export WEBSOCKET_SERVER_ADDRESS='"ws://localhost:8765"'
+        export WEBSOCKET_SERVER_ADDRESS='"ws://DetecBOX.local:8765"'
 fi
 
 #Створюємо директорію, куди будемо класти всі необхідні файли збірки
