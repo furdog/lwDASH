@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# Перевірка, чи переданий файл як аргумент
+if [ -z "$1" ]; then
+	echo "Будь ласка, вкажіть вхідний файл для побудови веб інтерфейсу."
+	exit 1
+fi
+
+# Перевірка існування файлу
+if [ ! -f "$1" ]; then
+	echo "Файл $1 не існує."
+	exit 1
+fi
+
+cp -u "$1" web/user.js
+
 #Встановлюємо необхідні змінні середовища
 export GIT_REPO_VERSION=$(git describe --tags)
 
@@ -19,8 +33,10 @@ cd web
 #Згенеруємо файли секцій для користувацького інтерфейсу
 rm -rf generated 2> /dev/null
 mkdir -p generated
-../macro/gensections.awk user/user.js
+../macro/gensections.awk user.js
 
 #Виконуємо всі необхідні макропідстановки у скопійований індекс
 ../macro/includefile.awk -i inplace ../build/index.html
 ../macro/environment.awk -i inplace ../build/index.html
+
+echo "Побудову веб інтерфейсу зарершено."

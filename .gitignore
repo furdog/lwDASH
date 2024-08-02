@@ -1,3 +1,5 @@
 build/*
 *generated*
 *built*
+user/
+user.js
