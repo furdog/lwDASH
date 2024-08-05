@@ -22,13 +22,14 @@ fi
 #Створюємо директорію, куди будемо класти всі необхідні файли збірки
 mkdir -p build
 
+rm    -rf build/sections 2> /dev/null
+mkdir -p  build/sections
+
 #Копіюємо індекс у директорію для збірки
 cat web/core/index.html > build/index.html
 
 #Згенеруємо файли секцій для користувацького інтерфейсу
-rm -rf web/generated 2> /dev/null
-mkdir -p web/generated
-macro/gensections.awk "$1"
+macro/gensections.awk -v sections_dir=build/sections "$1"
 
 #Переходимо у директорію з якої ми будемо виконувати макроси
 cd web
