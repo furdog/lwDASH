@@ -6,8 +6,8 @@
 
 		<!-- STYLES -->
 		<style>
-			@INCLUDE:core/styles.css
-			@INCLUDE:../build/sections/style.css
+			@INCLUDE:web/core/styles.css
+			@INCLUDE:build/sections/style.css
 		</style>
 
 	</head>
@@ -15,18 +15,9 @@
 	<body style="color: white;background: black;">
 		<!-- OVERLAY -->
 		<div id="dark-overlay" class="hidden fullpage dark-overlay"></div>
-		
-		<!-- BACKGROUND -->
-		<div class="background fullpage flag"></div>
-
-		<div class="background centered skull">
-			@INCLUDE:core/skull.svg
-		</div>
-
-		<div class="background fullpage vignette"></div>
 
 		<!-- USER PAGE AND WIDGETS -->
-		@INCLUDE:../build/sections/body.html
+		@INCLUDE:build/sections/body.html
 
 		<!-- FOOTER -->
 		<div class="gap"></div>
@@ -39,15 +30,15 @@
 		<script>
 			function _(id) {return document.getElementById(id)}
 			
-			@INCLUDE:core/overlay.js
-			@INCLUDE:core/interactive-help-tool.js
-			@INCLUDE:core/locale-and-data-templates.js
-			@INCLUDE:core/websocket-client.js
+			@INCLUDE:web/core/overlay.js
+			@INCLUDE:web/core/interactive-help-tool.js
+			@INCLUDE:web/core/locale-and-data-templates.js
+			@INCLUDE:web/core/websocket-client.js
 		</script>
 		
 		<!-- USER SCRIPTS -->
 		<script>
-			@INCLUDE:../build/sections/script.js
+			@INCLUDE:build/sections/script.js
 		</script>
 	</body>
 </html>

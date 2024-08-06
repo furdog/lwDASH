@@ -25,17 +25,20 @@ mkdir -p build
 rm    -rf build/sections 2> /dev/null
 mkdir -p  build/sections
 
-#Копіюємо індекс у директорію для збірки
+#Створюємо необов'язкові, порожні файли секцій
+touch build/sections/style.css
+touch build/sections/script.js
+
+#Попередньо виконаємо необхідні операції до користувацького файлу
+bash mksub.sh "$1"
+
+#Копіюємо головний індекс у директорію для збірки
 cat web/core/index.html > build/index.html
 
-#Згенеруємо файли секцій для користувацького інтерфейсу
-macro/gensections.awk -v sections_dir=build/sections "$1"
-
-#Переходимо у директорію з якої ми будемо виконувати макроси
-cd web
-
 #Виконуємо всі необхідні макропідстановки у скопійований індекс
-../macro/includefile.awk -i inplace ../build/index.html
-../macro/environment.awk -i inplace ../build/index.html
+macro/includefile.awk -i inplace build/index.html
+
+#Замінимо макро-змінні середовища для кінцевого файлу
+macro/environment.awk -i inplace build/index.html
 
 echo "Побудову веб інтерфейсу зарершено."

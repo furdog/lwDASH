@@ -6,6 +6,8 @@
 		include_directive = substr($0, RSTART, RLENGTH)
 		filename = substr(include_directive, 10)  # видаляємо "@INCLUDE:"
 		
+		system("echo Спроба включити файл: " filename " >&2")
+		
 		# Зчитуємо вміст файлу
 		system("cat " filename)
 		
