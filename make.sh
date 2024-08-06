@@ -30,7 +30,7 @@ touch build/sections/style.css
 touch build/sections/script.js
 
 #Попередньо виконаємо необхідні операції до користувацького файлу
-bash mksub.sh "$1"
+./mksub.sh "$1"
 
 #Копіюємо головний індекс у директорію для збірки
 cat web/core/index.html > build/index.html
@@ -40,5 +40,8 @@ macro/includefile.awk -i inplace build/index.html
 
 #Замінимо макро-змінні середовища для кінцевого файлу
 macro/environment.awk -i inplace build/index.html
+
+#Видалимо лишні відступи і пусті рядки
+awk -i inplace '$1=$1' build/index.html
 
 echo "Побудову веб інтерфейсу зарершено."
