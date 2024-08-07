@@ -21,6 +21,10 @@ async def send_initial_messages(client):
 	message_json = json.dumps(message)
 	await client.send(message_json)
 
+	message = ["sosf", [433]]
+	message_json = json.dumps(message)
+	await client.send(message_json)
+
 	#forall
 	#message = ["forall", [random.randint(8, 12) for n in range(6)]]
 	#message_json = json.dumps(message)
