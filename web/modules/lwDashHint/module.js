@@ -116,3 +116,15 @@ function showHintDialog(event) {
 		hintDialog.appendChild(closeButton);
 	}
 }
+
+function lwDashHint(element, text)
+{	
+	const hintDial = document.createElement('div');
+	hintDial.className = "hint dialog";
+	hintDial.id = `${element.id}-hint`;
+	hintDial.textContent = text;
+
+	element.dataset.hint = hintDial.id;	
+
+	document.body.appendChild(hintDial);
+}
