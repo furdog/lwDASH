@@ -17,11 +17,10 @@
 }
 
 @SECTION:body.html
-<!-- BACKGROUND -->
-<div class="background fullpage flag"></div>
-
-<div class="background centered skull">
-	@INCLUDE:web/modules/uk_skull_bg/skull.svg
+<div id="background" class="background fullpage">
+	<div class="background fullpage flag"></div>
+	<div class="background centered skull">
+		@INCLUDE:web/modules/uk_skull_bg/skull.svg
+	</div>
+	<div class="background fullpage vignette"></div>
 </div>
-
-<div class="background fullpage vignette"></div>

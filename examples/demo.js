@@ -24,7 +24,7 @@ console.log("HELLO LWDASH");
   Використовуємо попередньо описаний стиль а також макрос @ ENV:GIT_REPO_VERSION
   Який заміняє себе на поточну версію директорії GIT. */
 @SECTION:body.html
-<div class="help dialog my_style" id="version-help" data-template="Тут зазначена версія: @ENV:GIT_REPO_VERSION"></div>
+<div class="hint dialog my_style" id="version-help" data-template="Тут зазначена версія: @ENV:GIT_REPO_VERSION"></div>
 <!-- Тут коментар HTML (Не JS!!! Будьте уважні з секціями) -->
 
 @SECTION:script.js
@@ -43,5 +43,5 @@ bviol = lwDashText(hello.content, "Violets are blue,");
 lwDashText(hello.content, "Sugar is sweet");
 lwDashText(hello.content, "And so are you. ");
 
-rrose.self.style = "color: red;"
-bviol.self.style  = "color: blue;"
+rrose.self.style = "color: tomato;"
+bviol.self.style  = "color: cornflowerblue;"
