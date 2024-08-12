@@ -23,7 +23,7 @@
 		<div class="gap"></div>
 		<footer class="footer">
 			<button id="hint-button" class="hint-button">help</button>
-			<div style="margin-left: auto;" class="with-help" data-hint="version-help">@ENV:GIT_REPO_VERSION</div>
+			<div id="version" style="margin-left: auto;">@ENV:GIT_REPO_VERSION</div>
 		</footer>
 		
 		<!-- SCRIPTS -->
@@ -31,8 +31,6 @@
 			function _(id) {return document.getElementById(id)}
 			
 			@INCLUDE:web/core/overlay.js
-			@INCLUDE:web/core/interactive-help-tool.js
-			@INCLUDE:web/core/locale-and-data-templates.js
 			@INCLUDE:web/core/websocket-client.js
 		</script>
 		

@@ -13,7 +13,9 @@ if [ ! -f "$1" ]; then
 fi
 
 #Встановлюємо необхідні змінні середовища
-export GIT_REPO_VERSION=$(git describe --tags)
+if [ -z "${GIT_REPO_VERSION+x}" ]; then
+	export GIT_REPO_VERSION=$(git describe --tags)
+fi
 
 if [ -z "${WEBSOCKET_SERVER_ADDRESS+x}" ]; then
         export WEBSOCKET_SERVER_ADDRESS='"ws://DetecBOX.local:8765"'
