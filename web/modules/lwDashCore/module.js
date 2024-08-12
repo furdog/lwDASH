@@ -2,3 +2,4 @@
 @MODULE:lwDashHint
 @MODULE:lwDashPane
 @MODULE:lwDashText
+@MODULE:lwDashTemplate

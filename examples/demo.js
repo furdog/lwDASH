@@ -45,3 +45,25 @@ lwDashText(hello.content, "And so are you. ");
 
 rrose.self.style = "color: tomato;"
 bviol.self.style  = "color: cornflowerblue;"
+
+//Тестуємо шаблони lwDash
+lwDashTemplateDefaultLanguage = "en";
+lwDashTemplateLanguage = "uk";
+
+//Перевіряємо нашу рідну мову в шаблоні
+lwDashTemplates["LC_TEST"] = {en:"test", uk:"тест"};
+text = lwDashText(document.body);
+lwDashTemplate(text.self, "^{LC_TEST}");
+
+//Перевіряємо мову по замовчуванню (якщо поточна мова не існує в перекладі)
+lwDashTemplates["LC_TEST_DEFLANG"] = {en:"test deflang"};
+text = lwDashText(document.body);
+lwDashTemplate(text.self, "^{LC_TEST_DEFLANG}");
+
+//Перевіряємо форматування
+text = lwDashText(document.body);
+lwDashTemplate(text.self, "Тут шаблон який починається з малої букви: {LC_TEST}.")
+text = lwDashText(document.body);
+lwDashTemplate(text.self, "^{LC_TEST_DEFLANG} - починається з великої.");
+
+lwDashTemplateUpdateAll();
