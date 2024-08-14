@@ -67,3 +67,36 @@ text = lwDashText(document.body);
 lwDashTemplate(text.self, "^{LC_TEST_DEFLANG} - починається з великої.");
 
 lwDashTemplateUpdateAll();
+
+@MODULE:uPlot
+@SECTION:script.js
+let plot = lwDashPane(document.body, "uPlot TEST!");
+
+let xs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30];
+let vals = [-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10];
+
+let data = [
+	xs,
+	xs.map((t, i) => vals[Math.floor(Math.random() * vals.length)])
+];
+
+const opts = {
+	title: 'X or Y (adaptive + omni)',
+	x: true, y: true, uni: 50,
+	width: 600,
+	height: 400,
+	scales: {
+		x: {
+			time: false,
+		},
+	},
+	series: [
+		{},
+		{
+			fill: "rgba(0, 255, 0, .2)",
+			stroke: "white"
+		}
+	],
+};
+
+let u = new uPlot(opts, data, plot.content);
