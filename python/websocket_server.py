@@ -54,10 +54,22 @@ async def handler(websocket, path):
 async def periodic_message():
 	while True:
 		await asyncio.sleep(1)  # Adjust the interval as needed
+
 		message = ["log", [random.randint(-5, 5) for n in range(6)]]
 		message_json = json.dumps(message)
 		for client in connected_clients:
 			await client.send(message_json)
+
+		message = ["plot433", [random.randint(-127, 5) for n in range(570 - 370)]]
+		message_json = json.dumps(message)
+		for client in connected_clients:
+			await client.send(message_json)
+
+		message = ["plot915", [random.randint(-127, 5) for n in range(1040 - 740)]]
+		message_json = json.dumps(message)
+		for client in connected_clients:
+			await client.send(message_json)
+
 		print("Sent periodic message to all clients")
 
 async def main():
