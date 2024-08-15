@@ -81,22 +81,46 @@ let data = [
 ];
 
 const opts = {
-	title: 'X or Y (adaptive + omni)',
 	x: true, y: true, uni: 50,
-	width: 600,
-	height: 400,
 	scales: {
-		x: {
-			time: false,
-		},
+		x: { time: false },
 	},
+	
+	axes: [
+		{
+			stroke: 'white',
+			grid: { stroke: 'white' }
+		},
+		
+		{
+			stroke: 'white',
+			grid: { stroke: 'white' },
+			side: 3
+		},
+
+	],
+	
 	series: [
 		{},
 		{
 			fill: "rgba(0, 255, 0, .2)",
-			stroke: "white"
+			stroke: "red"
 		}
 	],
 };
 
-let u = new uPlot(opts, data, plot.content);
+let u = new uPlot(opts, [], plot.content);
+
+const plotResizeObserver = new ResizeObserver(entries => {
+	for (let entry of entries) {
+		const width = entry.contentRect.width;
+		const height = parseFloat(getComputedStyle(plot.content).fontSize) * 10;
+
+		u.setSize({ width, height });
+	}
+});
+
+// Починаємо спостерігати за змінами розмірів елемента
+plotResizeObserver.observe(plot.content);
+
+u.setData(data);
