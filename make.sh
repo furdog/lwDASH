@@ -46,4 +46,10 @@ macro/environment.awk -i inplace build/index.html
 #Видалимо лишні відступи і пусті рядки
 awk -i inplace '$1=$1' build/index.html
 
+#Створимо gzip
+gzip -9 -c build/index.html > build/index.html.gz
+
+#Перетворимо в массив C
+xxd -i build/index.html.gz > build/index.h
+
 echo "Побудову веб інтерфейсу зарершено."
