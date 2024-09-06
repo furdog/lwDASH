@@ -85,7 +85,10 @@ function toggleHintMode() {
 
 function showHintDialog(event) {
 	const dialogId = event.currentTarget.getAttribute('data-hint');
-	const hintDialog = document.getElementById(dialogId);
+	let   hintDialog = _(dialogId);
+	
+	if (!hintDialog)
+		hintDialog = event.currentTarget.hint;
 
 	exitHintMode();
 
@@ -121,10 +124,14 @@ function lwDashHint(element, text)
 {	
 	const hintDial = document.createElement('div');
 	hintDial.className = "hint dialog";
-	hintDial.id = `${element.id}-hint`;
-	hintDial.textContent = text;
 
+	hintDial.textContent = text;
 	element.dataset.hint = hintDial.id;	
 
+	if (element.id)
+		hintDial.id = `${element.id}-hint`;
+	else
+		element.hint = hintDial; //hidden hint, if no element ID
+	
 	document.body.appendChild(hintDial);
 }

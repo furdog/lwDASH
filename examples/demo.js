@@ -24,7 +24,7 @@ console.log("HELLO LWDASH");
   Використовуємо попередньо описаний стиль а також макрос @ ENV:GIT_REPO_VERSION
   Який заміняє себе на поточну версію директорії GIT. */
 @SECTION:body.html
-<div class="hint dialog my_style" id="version-help" data-template="Тут зазначена версія: @ENV:GIT_REPO_VERSION"></div>
+<div class="hint dialog my_style" id="version-hint" data-template="Тут зазначена версія: @ENV:GIT_REPO_VERSION"></div>
 <!-- Тут коментар HTML (Не JS!!! Будьте уважні з секціями) -->
 
 @SECTION:script.js
@@ -54,6 +54,7 @@ lwDashTemplateLanguage = "uk";
 lwDashTemplates["LC_TEST"] = {en:"test", uk:"тест"};
 text = lwDashText(document.body);
 lwDashTemplate(text.self, "^{LC_TEST}");
+lwDashHint(text.self, "Ця підсказка пояснює роботу тексту!");
 
 //Перевіряємо мову по замовчуванню (якщо поточна мова не існує в перекладі)
 lwDashTemplates["LC_TEST_DEFLANG"] = {en:"test deflang"};
@@ -71,6 +72,8 @@ lwDashTemplateUpdateAll();
 @MODULE:uPlot
 @SECTION:script.js
 let plot = lwDashPane(document.body, "uPlot TEST!");
+
+lwDashHint(plot.content, "Ця підсказка пояснює роботу плоттера!");
 
 let xs = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30];
 let vals = [-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10];
