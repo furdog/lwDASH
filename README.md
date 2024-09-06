@@ -1,7 +1,11 @@
 # lwDASH
 
 ## Мінімалістичний веб- дашборд.
-![зображення](https://github.com/user-attachments/assets/bd1c0eb5-c154-4832-aefb-ddda07689c3c)
+<p float="left">
+  <img src="https://github.com/user-attachments/assets/bd1c0eb5-c154-4832-aefb-ddda07689c3c" width="33%" />
+  <img src="https://github.com/user-attachments/assets/8c0befcd-c550-4726-9a04-c61b1447b313" width="33%" /> 
+  <img src="https://github.com/user-attachments/assets/68e5e13e-2f92-4319-a37e-7a26297b5a6c" width="33%" />
+</p>
 
 ## Головні цілі проекту:
 - Встроюваність. Ця бібліотека в першу чергу розроблюється для мікроконтролерів типу ESP32.
