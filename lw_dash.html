@@ -1,0 +1,1200 @@
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8"
+		      http-equiv="Content-Type">
+	</head>
+
+<body>
+</body>
+
+
+
+<script>
+/******************************************************************************
+ * SECTION TEMPLATE
+ *****************************************************************************/
+</script>
+<style></style>
+<script>
+	/* Use this as a template for new sections
+	   Every section should be spaced with 3 newlines from each side
+	   (for better readablity). Limit line lengths by 79/80 characters. */
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * CORE
+ *****************************************************************************/
+</script>
+<style>
+html body {
+	background: #000;
+	font-size: calc(1vw + 1vh);
+	font-family: 'Courier New', Courier, monospace;
+	margin: 0;
+
+	flex-direction: column;
+	display: flex;
+}
+</style>
+<script></script>
+
+
+
+<script>
+/******************************************************************************
+ * NETWORK
+ *****************************************************************************/
+</script>
+<style></style>
+<script>
+class network
+{
+	#ws; /* Websocket */
+
+	/* If there are no messages for certain period */
+	#connection_timeout_ms = 0; /* No timeout */
+	#connection_timer;
+	
+	#is_alive     = false;
+	#is_connected = false;
+
+	/* Prevents connection timeout, when timeout is set */
+	#keep_alive()
+	{
+		clearTimeout(this.#connection_timer);
+		this.#is_alive = true;
+
+		this.#connection_timer = setTimeout(() => {
+			if (this.#is_alive == true) {
+				this.on_timeout();
+			}
+
+			this.#is_alive = false;
+
+			this.#ws.close();
+		}, this.#connection_timeout_ms);
+	}
+
+	#send(id, data)
+	{
+		console.log(this.constructor.name + '.send: ' + id + ', ' +
+								data);
+
+		this.#ws.send(JSON.stringify([ id, data ]));
+	};
+
+	#recv(data)
+	{
+		console.log(this.constructor.name + '.recv: ' + data);
+		data = JSON.parse(data);
+
+		/* if it contains single message */
+		if (typeof (data[0]) != "object") {
+			this.on_message(data[0], data[1]);
+		} else {
+			/* if it contains multiple messages */
+			for (var i = 0; i < data.length; i++) {
+				this.on_message(data[i][0], data[i][0]);
+			};
+		}
+
+		if (this.#connection_timeout_ms > 0) {
+			this.#keep_alive();
+		}
+	}
+
+	/* Global events (can be overriden by user) */
+	on_connect()
+	{
+		console.log(this.constructor.name + '.on_connect')
+	};
+	
+	on_disconnect()
+	{
+		console.log(this.constructor.name + '.on_disconnect')
+	};
+	
+	on_timeout()
+	{
+		console.log(this.constructor.name + '.on_timeout')
+	};
+	
+	on_error()
+	{
+		console.log(this.constructor.name + '.on_error')
+	};
+	
+	on_message(id, data) {
+		console.log(this.constructor.name + '.on_message')
+	};
+
+	connect(ip, timeout)
+	{
+		this.#connection_timeout_ms = timeout;
+
+		this.#ws = new WebSocket(ip);
+
+		this.#ws.onopen = (evt) =>
+		{
+			this.#is_connected = true;
+
+			if (this.#connection_timeout_ms > 0) {
+				this.#keep_alive();
+			}
+
+			this.on_connect();
+		};
+
+		this.#ws.onclose = (evt) =>
+		{
+			if (this.#is_connected == true) {
+				this.#is_connected = false;
+				this.on_disconnect();
+			}
+
+			/* Destroy websocket */
+			this.#ws = null;
+
+			this.connect(ip, timeout);
+		};
+
+		this.#ws.onerror = (evt) =>
+		{
+			if (this.#is_connected == true) {
+				this.on_error();
+			}
+		};
+		
+		this.#ws.onmessage = (evt) =>
+		{
+			this.#recv(evt.data);
+		};
+	}
+
+	constructor(ip, timeout)
+	{
+		this.connect(ip, timeout);
+	}
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * LANGUAGE TEMPLATES
+ *****************************************************************************/
+</script>
+<style></style>
+<script>
+let lw_dash_template_default_language = 'en';
+let lw_dash_template_language         = 'en';
+
+/* Data templates (can contain localization or service data) */
+let lw_dash_literals = {};
+
+function lw_dash_template_add_literal(name, objects)
+{
+	lw_dash_literals[name] = objects;
+}
+
+/* Function for formatting text */
+function lw_dash_format_template(template, values) {
+	/* If our template is an object, it's considered a language literal. */
+	if (typeof template === 'object')
+		/* If translation for lw_dash_template_language is missing,
+		   use lw_dash_template_default_language */
+		template = template[lw_dash_template_language] ?
+			template[lw_dash_template_language] :
+			template[lw_dash_template_default_language];
+
+	/* If it's not a string, but a number or else - return as is. */
+	if (typeof template !== 'string')
+		return template;
+    
+	return template.replace(/(\^)?\{(\w+)\}/g, (_, specialChar, key) => {
+		let value = lw_dash_format_template(values[key], values);
+
+		if (typeof value === 'function') {
+			return value();
+		}
+
+		if (specialChar === '^') {
+			/* Convert the first letter to uppercase */
+			value = value.charAt(0).toUpperCase() + value.slice(1);
+		}
+		return value;
+	});
+}
+
+function lw_dash_template_apply(element, template) {
+	element.textContent = lw_dash_format_template(template,
+						      lw_dash_literals);
+}
+
+function lw_dash_template_register_element(element) {
+	element.dataset.template = element.textContent;
+	element.textContent = lw_dash_format_template(element.textContent,
+						      lw_dash_literals);
+}
+
+function lw_dash_template_update(element) {
+	lw_dash_template_apply(element, element.dataset.template);
+}
+
+/* Reapply templates to all elements with templates */
+function lw_dash_template_update_all() {
+	const elements = document.querySelectorAll('[data-template]');
+
+	elements.forEach(element => { lw_dash_template_update(element) });
+}
+
+/* After page load */
+document.addEventListener('DOMContentLoaded', () => {
+	lw_dash_template_update_all();
+});
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * IMPOSTOR
+ *****************************************************************************/
+</script>
+<style></style>
+<script>
+/** Creates a cloned element which mimics original element
+    appearence and position, but lies within another parent.
+    The original element is hidden unless delete() method is called.
+    The impostor element is not linked with the original, thus any
+    updates won't be transfered after one has been created. */
+function lw_dash_impostor(element, parent) {
+	/* 1. Store original visibility style to restore later */
+	const original_visibility = element.style.visibility;
+
+	/* 2. Get the original element's position and dimensions */
+	const rect = element.getBoundingClientRect();
+
+	/* 3. Clone the original element (deep clone to include children) */
+	const cloned = element.cloneNode(true);
+
+	/* 4. Hide the original element (preserving its space in the layout) */
+	element.style.visibility = 'hidden';
+
+	/* 5. Remove any ID to prevent duplicate IDs in the DOM */
+	cloned.removeAttribute('id');
+
+	/* 6. Apply fixed positioning */
+	cloned.style.position = 'fixed';
+	cloned.style.left     = `${rect.left}px`;
+	cloned.style.top      = `${rect.top}px`;
+
+	/* 7. Append the clone to the specified target parent */
+	parent.appendChild(cloned);
+
+	/* 8. Track original element position */
+	const position_tracker = setInterval(function() {
+		const original_rect = element.getBoundingClientRect();
+		cloned.style.top = original_rect.top + 'px';
+		cloned.style.left = original_rect.left + 'px';
+	}, 0);
+
+
+	/* 9. Return an object with the remove and a reference to the clone */
+	return {
+		remove: function() {
+			cloned.parentNode.removeChild(cloned);
+	
+			/* Restore the original element's visibility */
+			element.style.visibility = original_visibility;
+
+			/* Stop position tracker */
+			clearInterval(position_tracker);
+		},
+	
+		self: cloned
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * HINT TOOL (DEPENDS ON FLOATING CLONE)
+ *****************************************************************************/
+</script>
+<style>
+@keyframes hint_initial_scale {
+	0% {
+		transform: scale(1);
+	}
+	100% {
+		transform: scale(1.25);
+	}
+}
+
+.hint {
+	box-shadow: 0 0 1em rgba(32, 255, 0, 0.8);
+
+	transform: scale(1.25);
+
+	/* Apply the initial scaling animation */
+	animation: hint_initial_scale 0.5s ease-out 0s;
+
+	/* For hover: Transition properties for smooth changes */
+	transition: box-shadow 0.5s ease-in-out, transform 0.3s ease-out;
+}
+
+.hint:hover {
+	transform: scale(1.5);
+	box-shadow: 0 0 1.5em rgba(32, 255, 0, 1);
+}
+</style>
+<script>
+let lw_dash_hint_mode = false;
+
+function lw_dash_hint_mode_enter(parent)
+{
+	lw_dash_hint_mode = true;
+
+	const items = document.querySelectorAll('[data-hint]');
+
+	/* Create impostor for each item */
+	items.forEach(item => {
+		item.impostor               = lw_dash_impostor(item, parent);
+		item.impostor.self.onclick  = item.hint_click_action;
+		item.impostor.self.classList.add('hint');
+
+		/* Impostor should not have hint property
+		   This prevents from false enumeration when removing hints */
+		delete item.impostor.self.dataset.hint;
+	});
+}
+
+function lw_dash_hint_mode_exit()
+{
+	lw_dash_hint_mode = false;
+
+	const items = document.querySelectorAll('[data-hint]');
+
+	/* Remove all impostors */	
+	items.forEach((item, index) => {
+		item.impostor.remove();
+		delete item.impostor;
+	});
+}
+
+function lw_dash_hint_mode_toggle() {
+	if (!lw_dash_hint_mode)
+		lw_dash_hint_mode_enter();
+	else
+		lw_dash_hint_mode_exit();
+}
+
+function lw_dash_hint_create(element, click_action)
+{	
+	element.hint_click_action = click_action;
+	element.dataset.hint = "";
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * LOADER WIDGET
+ *****************************************************************************/
+</script>
+<style>
+.lds-dual-ring:after {
+	content: " ";
+	display: block;
+	width: 64px;
+	height: 64px;
+	margin: 8px;
+	border-radius: 50%;
+	border: 6px solid #fff;
+	border-color: #fff transparent #fff transparent;
+	animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@keyframes lds-dual-ring {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+</style>
+<script>
+function lw_dash_loader(parent)
+{
+	/* Loader element */
+	const loader_e = document.createElement('div');
+	loader_e.className = 'lds-dual-ring';
+	loader_e.style.justifyItems = "center";
+
+	/* Append the loader to parent */
+	parent.appendChild(loader_e);
+
+	return {
+		self: loader_e
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * OVERLAY WIDGET
+ *****************************************************************************/
+</script>
+<style>
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	backdrop-filter: blur(10px) sepia(1) brightness(0.5);
+
+	/* Default animation for fade-in */
+	animation: overlay_fade_in 0.3s ease-out forwards;
+}
+
+.overlay_bg {
+	background: rgb(0 0 0 / 30%);
+}
+
+/* Class to apply for fade-out animation */
+.overlay_fade_out {
+	animation: overlay_fade_out 0.3s ease-in forwards;
+}
+
+/* Keyframes for fade-in animation */
+@keyframes overlay_fade_in {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+/* Keyframes for fade-out animation */
+@keyframes overlay_fade_out {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+</style>
+<script>
+let _lw_dash_overlay_count = 0;
+
+function lw_dash_overlay(parent) {
+	/* Overlay element */
+	const overlay_e = document.createElement('div');
+
+	overlay_e.className = 'overlay overlay_bg'; 
+
+	/* Append the overlay to parent */
+	parent.appendChild(overlay_e);
+
+	/* Remove with animation */
+	function remove() {		
+		/* Add the fade-out animation class */
+		overlay_e.classList.add('overlay_fade_out');
+
+		/* Listen for the animation end event */
+		overlay_e.addEventListener('animationend', function handler() {
+			if (overlay_e.parentNode) {
+				overlay_e.parentNode.removeChild(overlay_e);
+			}
+
+			/* Remove the event listener to prevent memory leaks */
+			overlay_e.removeEventListener('animationend', handler);
+		});
+	}
+
+	return {
+		self: overlay_e,
+
+		/* methods */
+		remove: remove
+	}
+}
+
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * CONTAINER WIDGET
+ *****************************************************************************/
+</script>
+<style>
+.container {
+	display: flex;
+	flex-wrap: wrap; /* Allow multiple widgets to wrap */
+}
+</style>
+<script>
+function lw_dash_container_h(parent)
+{
+	/* Container element */
+	const container_e = document.createElement('div');
+	container_e.className = 'container';
+	container_e.style.flexDirection = "horizontal";
+
+	/* Append Container to parent */
+	parent.appendChild(container_e);
+
+	return {
+		self: container_e
+	};
+}
+
+function lw_dash_container_v(parent)
+{
+	/* Container element */
+	const container_e = lw_dash_container_h(parent).self;
+	container_e.style.flexDirection = "vertical";
+
+	return {
+		self: container_e
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * PANE WIDGET
+ *****************************************************************************/
+</script>
+<style>
+.pane {
+	background: #444a;
+	margin: 1em;
+	border-radius: 1em;
+	box-shadow: rgb(0 0 0) 0.1em 0.1em 0.5em;
+	
+	flex: auto;
+}
+
+/*.pane:hover {
+	transform: translateY(-5px);
+}*/
+
+
+.pane_title {
+	background: linear-gradient(90deg, #000, transparent);
+	padding: 0.25em;
+	font-size: 1.25em;
+	text-align: center;
+	color: #FFF;
+}
+
+.pane_content {
+	padding: 0.5em;
+}
+</style>
+<script>
+function lw_dash_pane(parent, title)
+{
+	/* Pane element */
+	const pane_e = document.createElement('div');
+	pane_e.className = 'pane';
+
+	/* Title element */
+	const title_e = document.createElement('div');
+	title_e.className = 'pane_title';
+	title_e.textContent = title;
+
+	/* Content element */
+	const content_e = document.createElement('div');
+	content_e.className = 'pane_content';
+
+	/* Append title and content to pane */
+	pane_e.appendChild(title_e);
+	pane_e.appendChild(content_e);
+
+	/* Append pane to parent */
+	parent.appendChild(pane_e);
+
+	return {
+		self:    pane_e,
+		title:   title_e,
+		content: content_e
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * DIALOG WIDGET
+ *****************************************************************************/
+</script>
+<style>
+/* Keyframes for the slide-in animation */
+@keyframes dialog_slide_in_from_top {
+	0% {
+		/* Start far above the center */
+		transform: translate(-50%, -150%);
+		opacity: 0;
+	}
+	100% {
+		/* End at the centered position */
+		transform: translate(-50%, -50%);
+		opacity: 1;
+	}
+}
+
+/* Keyframes for the slide-out animation (opposite of slide-in) */
+@keyframes dialog_slide_out_from_top {
+	0% {
+		/* Start at the centered position */
+		transform: translate(-50%, -50%);
+		opacity: 1;
+	}
+	100% {
+		/* End far above the center */
+		transform: translate(-50%, -150%);
+		opacity: 0;
+	}
+}
+
+.dialog {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+
+	padding: 0.5em;
+	margin: 1em;
+	min-width: 60%;
+	display: flex;
+	flex-direction: column;
+	
+	font-size: 1.5em;
+
+	/* Inherit pane styles for consistency */
+	border-radius: 1em;
+	background: linear-gradient(0deg, #444a, transparent);
+	gap: 0.5em;
+
+	/* 0.5s duration, ease-out timing, stays at end state */
+	animation: dialog_slide_in_from_top 0.5s ease-out forwards;
+}
+
+/* Class to apply for slide-out animation */
+.dialog_slide_out {
+	/* Use ease-in for removal */
+	animation: dialog_slide_out_from_top 0.5s ease-in forwards;    
+}
+
+.dialog_title {
+	/* Inherit pane_title styles */
+	padding: 0.25em;
+	font-size: 1.5em; /* Adjusted for dialog's larger base font-size */
+	text-align: center;
+	color: #FFF;
+}
+
+.dialog_content {
+	flex: auto; /* Allows content to expand */
+	padding: 0.5em;
+	overflow: auto; /* Add scroll if content exceeds size */
+}
+
+.dialog_options {
+	display: flex;
+	justify-content: flex-end; /* Align options to the right */
+	gap: 0.5em; /* Space between option buttons */
+}
+
+.dialog_option {
+	padding: 0.5em 1em;
+	border: 1px solid #777;
+	border-radius: 1em;
+	cursor: pointer;
+	background: #000a;
+	color: #fff;
+	font-size: 0.8em; /* Relative to dialog's base font-size */
+	transition: background 0.2s, transform 0.2s;
+	flex: auto;
+}
+
+.dialog_option:hover {
+	background: #777;
+	transform: translateY(-2px);
+}
+</style>
+<script>
+function lw_dash_dialog(parent, title, options)
+{
+	/* Dialog element */
+	const dialog_e = document.createElement('div');
+	dialog_e.className = 'dialog';
+
+	/* Title element */
+	const title_e = document.createElement('div');
+	title_e.className = 'dialog_title';
+	title_e.textContent = title;
+
+	/* Content element */
+	const content_e = document.createElement('div');
+	content_e.className = 'dialog_content';
+
+	/* Options container element */
+	const options_e = document.createElement('div');
+	options_e.className = 'dialog_options';
+
+	/* Store references to individual option elements */
+	const option_elements = {};
+
+	/* Create option buttons */
+	if (options && Array.isArray(options)) {
+		options.forEach(option_text => {
+			const option_button_e =
+				document.createElement('button');
+			option_button_e.className = 'dialog_option';
+			option_button_e.textContent = option_text;
+			options_e.appendChild(option_button_e);
+			option_elements[option_text.toLowerCase()] =
+				option_button_e; /* Store by lowercase text */
+		});
+	}
+
+	/* Append title, content, and options to dialog */
+	dialog_e.appendChild(title_e);
+	dialog_e.appendChild(content_e);
+	dialog_e.appendChild(options_e);
+
+	/* Append dialog to parent */
+	parent.appendChild(dialog_e);
+
+	/* Remove with animation */
+	function remove() {
+		/* Add the slide-out animation class */
+		dialog_e.classList.add('dialog_slide_out');
+
+		/* Listen for the animation end event */
+		dialog_e.addEventListener('animationend', function handler() {
+			if (dialog_e.parentNode) {
+				dialog_e.parentNode.removeChild(dialog_e);
+			}
+
+			/* Remove the event listener to prevent memory leaks */
+			dialog_e.removeEventListener('animationend', handler);
+		});
+	}
+
+	return {
+		self: dialog_e,
+		title: title_e,
+		content: content_e,
+		options: option_elements,
+		
+		/* methods */
+		remove: remove
+	};
+}
+
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * TEXT WIDGET
+ *****************************************************************************/
+</script>
+<style>
+.text {
+	color: #fff;
+	white-space: pre;
+}
+</style>
+<script>
+function lw_dash_text(parent, title)
+{
+	/* Create a container div for the dashboard panel */
+	const text_e = document.createElement('div');
+	text_e.className = 'text';
+	text_e.textContent = title;
+
+	/* Append the panel to the body or a specific container */
+	parent.appendChild(text_e);
+
+	function remove() {
+		if (text_e.parentNode) {
+			text_e.parentNode.removeChild(text_e);
+		}
+	}
+
+	return {
+		self: text_e,
+
+		remove: remove
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * FOOTER WIDGET
+ *****************************************************************************/
+</script>
+<style>
+.footer {
+	box-sizing: border-box;
+	position: fixed;
+	bottom: 0;
+	padding: 0.5em;
+	width: 100%;
+	height: 2.5em;
+
+	display: flex;
+	background: linear-gradient(to top,
+		#00FFAA44 90%,
+		transparent 100%
+	);
+	text-align: right;
+	align-items: center;
+}
+</style>
+<script>
+function lw_dash_footer(parent) {
+	/* Create a footer div */
+	const footer_e = document.createElement('div');
+	footer_e.className = 'footer';
+
+	parent.appendChild(footer_e);
+
+	/* Margin, so footer will be below lowest element */
+	const margin_e = document.createElement('div');
+	margin_e.style.order = 999;
+
+	/* Get the computed height of the footer */
+	const footer_height = footer_e.offsetHeight;
+
+	/* Set the margin-bottom of margin_e to the footer's height */
+	margin_e.style.height = footer_height + 'px';
+	margin_e.style.width  = '100%';
+
+	/* Append margin_e after the footer, or where appropriate */
+	parent.appendChild(margin_e);
+
+	return {
+		self:   footer_e,
+		margin: margin_e
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * LANGUAGE SELECTOR WIDGET
+ *****************************************************************************/
+</script>
+<style>
+/* Styling for the language selector widget */
+.language_selector {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.25em 0.5em;
+	border-radius: 0.5em;
+	background: rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+	position: relative;
+	/* overflow: hidden; */
+	transition: background 0.2s ease;
+
+	user-select: none;
+}
+
+.language_selector:hover {
+	background: rgba(0, 0, 0, 0.7);
+	transform: translateY(-2px);
+}
+
+.language_selector_item {
+	display: flex;
+	align-items: center;
+	gap: 0.3em;
+	font-size: 1.2em;
+	white-space: nowrap;
+	transition: transform 0.3s ease-out;
+	width: 100%;
+	justify-content: center;
+}
+
+/* Initially hide all items by positioning them off-screen */
+.language_selector_item {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(100%);
+}
+
+/* Class to make the active item visible */
+.language_selector_item.active {
+	position: static;
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+
+.language_selector_item_flag {
+	font-size: 1.2em;
+	line-height: 1;
+}
+
+.language_selector_item_short_name {
+	font-weight: bold;
+	color: #fff;
+}
+
+.language_selector_item_tooltip {
+	position: absolute;
+	bottom: 120%;
+	left: 0%;
+	transform: translateX(-50%);
+	background-color: #333;
+	color: #fff;
+	padding: 0.4em 0.8em;
+	border-radius: 0.5em;
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.2s ease, visibility 0.2s ease;
+	z-index: 10;
+	pointer-events: none;
+}
+
+/* Tooltip visibility on hover over the selector itself */
+.language_selector:hover .language_selector_item_tooltip {
+	opacity: 1;
+	visibility: visible;
+}
+</style>
+<script>
+/**
+ * Creates a language selector widget.
+ *
+ * @param {HTMLElement} parent - The DOM element to which the
+	language selector will be appended.
+ * @param {Array<Object>} languages - An array of language objects,
+	each with 'name', 'short_name', and 'flags'.
+ * @param {Function} on_change - Callback function to be called when the
+	language changes.
+ * @returns {Object} An object containing a reference to the
+	language selector element.
+ */
+function lw_dash_language_selector(parent, languages, on_change) {
+	/* Language selector container element */
+	const self = document.createElement('div');
+	self.className = 'language_selector';
+
+	/* Current active language index */
+	let current_language_index = 0;
+
+	/* Tooltip element for the currently displayed language */
+	const tooltip_e = document.createElement('div');
+	tooltip_e.className = 'language_selector_item_tooltip';
+	self.appendChild(tooltip_e);
+
+	/* Container for the actual language display (flag + short name) */
+	const display_container_e = document.createElement('div');
+	display_container_e.style.display = 'flex';
+	display_container_e.style.alignItems = 'center';
+	display_container_e.style.gap = '0.3em';
+
+	const flag_e = document.createElement('span');
+	flag_e.className = 'language_selector_item_flag';
+	display_container_e.appendChild(flag_e);
+
+	const short_name_e = document.createElement('span');
+	short_name_e.className = 'language_selector_item_short_name';
+	display_container_e.appendChild(short_name_e);
+
+	self.appendChild(display_container_e);
+
+	/**
+	 * Updates the displayed language based on the current_language_index.
+	 */
+	function update_display() {
+		const current_language = languages[current_language_index];
+		flag_e.innerHTML = current_language.flag;
+		short_name_e.textContent = 
+			current_language.short_name.toUpperCase();
+		
+		/* Update tooltip as well */
+		tooltip_e.textContent = current_language.name;
+	}
+
+	/**
+	 * Cycles to the next language in the list.
+	 */
+	function cycle_language() {
+		current_language_index =
+			(current_language_index + 1) % languages.length;
+
+		update_display();
+
+		/* Call the provided on_change callback */
+		if (typeof on_change === 'function') {
+			on_change(
+				languages[current_language_index].short_name);
+		}
+	}
+
+	/* Handle click event on the selector itself */
+	self.addEventListener('click', cycle_language);
+
+	/* Initial display setup */
+	update_display();
+
+	/* Append selector to parent */
+	parent.appendChild(self);
+
+	return {
+		self: self,
+	};
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * SECOND LAYER (NETWORK)
+ *****************************************************************************/
+</script>
+<style></style>
+<script>
+const net = new network("ws://10.10.10.10/ws", 10000);
+
+function net_dialog()
+{
+	const net_overlay = lw_dash_overlay(document.body);
+	const net_dialog  = lw_dash_dialog(net_overlay.self, "Network",
+					   ["okeh"]);
+	lw_dash_loader(net_dialog.content);
+	const net_text = lw_dash_text(net_dialog.content,
+				     "Attempting to connect...");
+
+	/* Show overlay on top of everything (as it is very important) */
+	net_overlay.self.style.zIndex = 999;
+
+	function remove() {
+		net_dialog.remove();
+		net_overlay.remove();
+		net_text.remove();
+	}
+
+	net_dialog.options.okeh.onclick = remove;
+
+	return {
+		overlay: net_overlay,
+		dialog: net_dialog,
+		
+		remove: remove
+	}
+}
+
+net_dial = net_dialog();
+
+net.on_connect = function () {
+	net_dial.remove();
+};
+
+net.on_disconnect = function () {
+	net_dial = net_dialog();
+};
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * SECOND LAYER (HINT TOOL)
+ *****************************************************************************/
+</script>
+<style></style>
+<script></script>
+
+
+
+<script>
+/******************************************************************************
+ * SECOND LAYER (FOOTER)
+ *****************************************************************************/
+</script>
+<style></style>
+<script>
+const footer = lw_dash_footer(document.body);
+
+let   hint_overlay  = undefined;
+let   hint_button_floating = undefined;
+const hint_button  = document.createElement('div');
+hint_button.className = 'text language_selector';
+hint_button.textContent = "HINTS";
+footer.self.appendChild(hint_button);
+
+hint_button.onclick = function() {
+	if (!lw_dash_hint_mode) {
+		hint_overlay = lw_dash_overlay(document.body);
+		hint_button_impostor = lw_dash_impostor(hint_button,
+							hint_overlay.self);
+
+		lw_dash_hint_mode_enter(hint_overlay.self);
+
+		hint_button_impostor.self.onclick = function() { 
+			lw_dash_hint_mode_exit();
+			hint_overlay.remove();
+			hint_button_impostor.remove();
+		};
+	} else {
+		hint_button_impostor.self.onclick();
+	}
+}
+</script>
+
+
+
+<script>
+/******************************************************************************
+ * USER SCRIPT
+ *****************************************************************************/
+</script>
+<script>
+/* User script goes here: */
+@ENV:USER_SCRIPT
+</script>
+
+</html>
