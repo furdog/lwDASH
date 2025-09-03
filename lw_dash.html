@@ -190,8 +190,31 @@ class network
 </script>
 <style></style>
 <script>
+/* Default language used by templates */
 let lw_dash_template_default_language = 'en';
 let lw_dash_template_language         = 'en';
+
+/* Language used by browser (TODO as extension) */
+let lw_dash_browser_language = navigator.language || navigator.userLanguage;
+
+/* Language in storage has higher priority */
+const lw_dash_stored_language = localStorage.getItem('userLanguage');
+if (lw_dash_stored_language)
+{
+	console.log("Used language from previous session: " +
+		    lw_dash_stored_language);
+	lw_dash_browser_language = lw_dash_stored_language;
+}
+
+if (lw_dash_browser_language.startsWith('en')) {
+	lw_dash_template_language = 'en';
+	console.log("User language seems to be English");
+} else if (lw_dash_browser_language.startsWith('uk')) {
+	lw_dash_template_language = 'uk';
+	console.log("User language seems to be Ukrainian")
+} else {
+	console.log("User language is not recognised (defaults to english)");
+}
 
 /* Data templates (can contain localization or service data) */
 let lw_dash_literals = {};
@@ -252,9 +275,20 @@ function lw_dash_template_update_all() {
 	elements.forEach(element => { lw_dash_template_update(element) });
 }
 
+function lw_dash_template_set_language(lang)
+{
+	if (lang) {
+		lw_dash_template_language = lang;
+	}
+
+	console.log("Changed language to " + lw_dash_template_language);
+
+	lw_dash_template_update_all();
+}
+
 /* After page load */
 document.addEventListener('DOMContentLoaded', () => {
-	lw_dash_template_update_all();
+	lw_dash_template_set_language();
 });
 </script>
 
@@ -913,7 +947,7 @@ function lw_dash_footer(parent) {
 
 <script>
 /******************************************************************************
- * LANGUAGE SELECTOR WIDGET
+ * LANGUAGE SELECTOR WIDGET (DEPENDS ON TEMPLATES)
  *****************************************************************************/
 </script>
 <style>
@@ -1071,7 +1105,16 @@ function lw_dash_language_selector(parent, languages, on_change) {
 			on_change(
 				languages[current_language_index].short_name);
 		}
+
+		localStorage.setItem('userLanguage',
+				languages[current_language_index].short_name);
 	}
+
+	/* Dirty solution, should be changed by set_language event (TODO) */
+	current_language_index =
+		languages.findIndex(lang => lang.short_name ===
+					    lw_dash_template_language);
+	update_display();
 
 	/* Handle click event on the selector itself */
 	self.addEventListener('click', cycle_language);
