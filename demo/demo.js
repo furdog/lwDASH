@@ -1,23 +1,20 @@
 const selector = lw_dash_language_selector(footer.self, [
-	{name: "Українська", short_name: "ua", flag: "&#127482;&#127462;"},
+	{name: "Українська", short_name: "uk", flag: "&#127482;&#127462;"},
 	{name: "English",    short_name: "en", flag: "&#127468;&#127463;"}],
-	function (lang) { lw_dash_template_language = lang;
-			  lw_dash_template_update_all(); console.log(lang); }
+	function (lang) { lw_dash_template_set_language(lang); }
 );
 
 selector.self.style.marginLeft = "auto";
 
 const c = lw_dash_container_h(document.body);
 
-lw_dash_template_language = 'ua';
-
 const hello = lw_dash_pane(c.self, "^{LC_HELLO}");
 lw_dash_template_add_literal("LC_HELLO",
-	{en:"Hello world!", ua:"Привіт світ!"});
+	{en:"Hello world!", uk:"Привіт світ!"});
 lw_dash_template_register_element(hello.title);
 
 lw_dash_template_add_literal("LC_ROSES",
-	{en:"Roses are red", ua:"Троянди червоні"});
+	{en:"Roses are red", uk:"Троянди червоні"});
 
 const rrose = lw_dash_text(hello.content, "^{LC_ROSES}");
 lw_dash_template_register_element(rrose.self);
@@ -65,9 +62,9 @@ rrose3.self.style = "color: tomato;"
 bviol3.self.style = "color: cornflowerblue;"
 
 lw_dash_template_add_literal("LC_SUGARIS",
-	{en:"sugar is the", ua:"цукор це"});
+	{en:"sugar is the", uk:"цукор це"});
 lw_dash_template_add_literal("LC_BEER",
-	{en:"beer", ua:"пиво"});
+	{en:"beer", uk:"пиво"});
 for (i = 0; i < 99; i++) {
 	const text = lw_dash_text(c.self, "^{LC_SUGARIS} " + i + 
 				  " {LC_BEER}!");
