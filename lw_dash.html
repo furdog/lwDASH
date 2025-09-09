@@ -1145,11 +1145,26 @@ const net = new network("ws://10.10.10.10/ws", 10000);
 function net_dialog()
 {
 	const net_overlay = lw_dash_overlay(document.body);
-	const net_dialog  = lw_dash_dialog(net_overlay.self, "Network",
-					   ["okeh"]);
+
+	/* Create localization symbols */
+	lw_dash_template_add_literal("LC_NET_DIALOG_TITLE", {en: "network"});
+	lw_dash_template_add_literal("LC_NET_DIALOG_OK",    {en: "ignore"});
+	lw_dash_template_add_literal("LC_NET_DIALOG_TEXT",  {en:
+						  "attempting to connect..."});
+
+	/* Create elements */
+	const net_dialog  = lw_dash_dialog(net_overlay.self,
+					   "^{LC_NET_DIALOG_TITLE}", ["ok"]);
+	net_dialog.options.ok.textContent = "^{LC_NET_DIALOG_OK}";
+
 	lw_dash_loader(net_dialog.content);
 	const net_text = lw_dash_text(net_dialog.content,
-				     "Attempting to connect...");
+				      "^{LC_NET_DIALOG_TEXT}");
+
+	/* Register localization */
+	lw_dash_template_register_element(net_dialog.title);
+	lw_dash_template_register_element(net_dialog.options.ok);
+	lw_dash_template_register_element(net_text.self);
 
 	/* Show overlay on top of everything (as it is very important) */
 	net_overlay.self.style.zIndex = 999;
@@ -1160,7 +1175,7 @@ function net_dialog()
 		net_text.remove();
 	}
 
-	net_dialog.options.okeh.onclick = remove;
+	net_dialog.options.ok.onclick = remove;
 
 	return {
 		overlay: net_overlay,
