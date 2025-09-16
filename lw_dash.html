@@ -50,7 +50,7 @@ html body {
 </script>
 <style></style>
 <script>
-class network
+class lw_dash_network
 {
 	#ws; /* Websocket */
 
@@ -185,36 +185,16 @@ class network
 
 <script>
 /******************************************************************************
- * LANGUAGE TEMPLATES
+ * TEMPLATE
+ * TODO REFACTOR
+ * TODO RECONSIDER USE OF VARIANTS (THEY ONLY ADD EXTRA COMPLEXITY)
  *****************************************************************************/
 </script>
 <style></style>
 <script>
 /* Default language used by templates */
-let lw_dash_template_default_language = 'en';
-let lw_dash_template_language         = 'en';
-
-/* Language used by browser (TODO as extension) */
-let lw_dash_browser_language = navigator.language || navigator.userLanguage;
-
-/* Language in storage has higher priority */
-const lw_dash_stored_language = localStorage.getItem('userLanguage');
-if (lw_dash_stored_language)
-{
-	console.log("Used language from previous session: " +
-		    lw_dash_stored_language);
-	lw_dash_browser_language = lw_dash_stored_language;
-}
-
-if (lw_dash_browser_language.startsWith('en')) {
-	lw_dash_template_language = 'en';
-	console.log("User language seems to be English");
-} else if (lw_dash_browser_language.startsWith('uk')) {
-	lw_dash_template_language = 'uk';
-	console.log("User language seems to be Ukrainian")
-} else {
-	console.log("User language is not recognised (defaults to english)");
-}
+let lw_dash_template_default_variant   = 'en';
+let lw_dash_template_preferred_variant = 'en';
 
 /* Data templates (can contain localization or service data) */
 let lw_dash_literals = {};
@@ -224,22 +204,42 @@ function lw_dash_template_add_literal(name, objects)
 	lw_dash_literals[name] = objects;
 }
 
-/* Function for formatting text */
+function lw_dash_template_add_variant(name, variant, text)
+{
+	lw_dash_literals[name][variant] = text;
+}
+
+function lw_dash_template_set_default_variant(variant)
+{
+	lw_dash_template_default_variant = variant;
+}
+
+function lw_dash_template_set_preferred_variant(variant)
+{
+	lw_dash_template_preferred_variant = variant;
+}
+
+/* Function for formatting text (Recursive). TODO make less complex */
 function lw_dash_format_template(template, values) {
 	/* If our template is an object, it's considered a language literal. */
 	if (typeof template === 'object')
-		/* If translation for lw_dash_template_language is missing,
-		   use lw_dash_template_default_language */
-		template = template[lw_dash_template_language] ?
-			template[lw_dash_template_language] :
-			template[lw_dash_template_default_language];
+		/* If lw_dash_template_preferred_variant is missing,
+		   use lw_dash_template_default_variant */
+		template = template[lw_dash_template_preferred_variant] ?
+			template[lw_dash_template_preferred_variant] :
+			template[lw_dash_template_default_variant];
 
 	/* If it's not a string, but a number or else - return as is. */
 	if (typeof template !== 'string')
 		return template;
-    
+
+	/* For every match */
 	return template.replace(/(\^)?\{(\w+)\}/g, (_, specialChar, key) => {
 		let value = lw_dash_format_template(values[key], values);
+
+		/* Return template as is */
+		if (value == undefined)
+			return _;
 
 		if (typeof value === 'function') {
 			return value();
@@ -268,28 +268,13 @@ function lw_dash_template_update(element) {
 	lw_dash_template_apply(element, element.dataset.template);
 }
 
-/* Reapply templates to all elements with templates */
-function lw_dash_template_update_all() {
-	const elements = document.querySelectorAll('[data-template]');
+function lw_dash_template_apply_variant(web_element, variant)
+{
+	const elements = web_element.querySelectorAll('[data-template]');
 
 	elements.forEach(element => { lw_dash_template_update(element) });
 }
 
-function lw_dash_template_set_language(lang)
-{
-	if (lang) {
-		lw_dash_template_language = lang;
-	}
-
-	console.log("Changed language to " + lw_dash_template_language);
-
-	lw_dash_template_update_all();
-}
-
-/* After page load */
-document.addEventListener('DOMContentLoaded', () => {
-	lw_dash_template_set_language();
-});
 </script>
 
 
@@ -360,6 +345,7 @@ function lw_dash_impostor(element, parent) {
 <script>
 /******************************************************************************
  * HINT TOOL (DEPENDS ON FLOATING CLONE)
+ * TODO MAKE INDEPENDENT
  *****************************************************************************/
 </script>
 <style>
@@ -682,6 +668,7 @@ function lw_dash_pane(parent, title)
 <script>
 /******************************************************************************
  * DIALOG WIDGET
+ * TODO BUTTONS SHOULD NOT BE PART OF DIALOG
  *****************************************************************************/
 </script>
 <style>
@@ -948,6 +935,7 @@ function lw_dash_footer(parent) {
 <script>
 /******************************************************************************
  * LANGUAGE SELECTOR WIDGET (DEPENDS ON TEMPLATES)
+ * TODO MAKE INDEPENDENT
  *****************************************************************************/
 </script>
 <style>
@@ -1113,7 +1101,7 @@ function lw_dash_language_selector(parent, languages, on_change) {
 	/* Dirty solution, should be changed by set_language event (TODO) */
 	current_language_index =
 		languages.findIndex(lang => lang.short_name ===
-					    lw_dash_template_language);
+					   lw_dash_template_preferred_variant);
 	update_display();
 
 	/* Handle click event on the selector itself */
@@ -1135,71 +1123,6 @@ function lw_dash_language_selector(parent, languages, on_change) {
 
 <script>
 /******************************************************************************
- * SECOND LAYER (NETWORK)
- *****************************************************************************/
-</script>
-<style></style>
-<script>
-const net = new network("ws://10.10.10.10/ws", 10000);
-
-function net_dialog()
-{
-	const net_overlay = lw_dash_overlay(document.body);
-
-	/* Create localization symbols */
-	lw_dash_template_add_literal("LC_NET_DIALOG_TITLE", {en: "network"});
-	lw_dash_template_add_literal("LC_NET_DIALOG_OK",    {en: "ignore"});
-	lw_dash_template_add_literal("LC_NET_DIALOG_TEXT",  {en:
-						  "attempting to connect..."});
-
-	/* Create elements */
-	const net_dialog  = lw_dash_dialog(net_overlay.self,
-					   "^{LC_NET_DIALOG_TITLE}", ["ok"]);
-	net_dialog.options.ok.textContent = "^{LC_NET_DIALOG_OK}";
-
-	lw_dash_loader(net_dialog.content);
-	const net_text = lw_dash_text(net_dialog.content,
-				      "^{LC_NET_DIALOG_TEXT}");
-
-	/* Register localization */
-	lw_dash_template_register_element(net_dialog.title);
-	lw_dash_template_register_element(net_dialog.options.ok);
-	lw_dash_template_register_element(net_text.self);
-
-	/* Show overlay on top of everything (as it is very important) */
-	net_overlay.self.style.zIndex = 999;
-
-	function remove() {
-		net_dialog.remove();
-		net_overlay.remove();
-		net_text.remove();
-	}
-
-	net_dialog.options.ok.onclick = remove;
-
-	return {
-		overlay: net_overlay,
-		dialog: net_dialog,
-		
-		remove: remove
-	}
-}
-
-net_dial = net_dialog();
-
-net.on_connect = function () {
-	net_dial.remove();
-};
-
-net.on_disconnect = function () {
-	net_dial = net_dialog();
-};
-</script>
-
-
-
-<script>
-/******************************************************************************
  * SECOND LAYER (HINT TOOL)
  *****************************************************************************/
 </script>
@@ -1211,6 +1134,7 @@ net.on_disconnect = function () {
 <script>
 /******************************************************************************
  * SECOND LAYER (FOOTER)
+ * TODO MAKE INDEPENDENT
  *****************************************************************************/
 </script>
 <style></style>
