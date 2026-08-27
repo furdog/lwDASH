@@ -1,0 +1,272 @@
+<style>
+/* Used to blur non-hint elements, when entered into hint mode */
+@keyframes hint_overlay_fade_in {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes hint_overlay_fade_out {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+.hint_overlay_fade_in {
+	background: rgb(0 0 0 / 30%);
+
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	backdrop-filter: blur(10px) sepia(1) brightness(0.5);
+
+	/* Soft appearence */
+	animation: hint_overlay_fade_in 0.3s ease-out forwards;
+}
+
+.hint_overlay_fade_out {
+	animation: hint_overlay_fade_out 0.3s ease-in forwards;
+}
+
+/* Badge, when pressed by user - enters hint mode */
+@keyframes hint_badge {
+	0% {
+		transform: rotateY(0deg) translateY(0px);
+		filter: drop-shadow(2px 4px 6px orange);
+	} 50% {
+		transform: rotateY(0deg) translateY(-5px);
+		filter: drop-shadow(0px 0px 0px orange);
+	} 100% {
+		transform: rotateY(0deg) translateY(0px);
+		filter: drop-shadow(2px 4px 6px orange);
+	}
+}
+
+.hint_badge {
+	position: fixed;
+	top: 0em;
+	right: 0em;
+	padding: 0;
+	font-size: 2em;
+	user-select: none;
+
+	animation-name: hint_badge;
+	animation-iteration-count: infinite;
+	animation-duration: 2s;
+	animation-timing-function: linear;
+}
+
+/* Every element to be hinted is considered a hint target.
+   Should not be used standalone, as it depends on hint tool implementation */
+@keyframes hint_target {
+	0% {
+		transform: scale(1);
+	} 100% {
+		transform: scale(0.75);
+	}
+}
+
+.hint_target {
+	box-shadow: 0 0 1em rgba(32, 255, 0, 0.8);
+
+	transform: scale(0.75);
+
+	/* Apply the initial scaling animation */
+	animation: hint_target 0.5s ease-out 0s;
+
+	/* For hover: Transition properties for smooth changes */
+	transition: box-shadow 0.5s ease-in-out, transform 0.3s ease-out;
+}
+
+.hint_target:hover {
+	transform: scale(1.0);
+	box-shadow: 0 0 1.5em rgba(32, 255, 0, 1);
+}
+</style>
+
+<script>
+class hint_tool {
+	/** Unique identifier */
+	constructor(uid) {
+		this.uid = uid;
+	}
+
+	/** Active overlay */
+	overlay = undefined;
+}
+
+/** Attaches hint to the element, click action may be specified */
+hint_tool.prototype.register = function (element, click_action) {
+	/* This elements now containts "hint dataset element" */
+	element.dataset["hint_" + this.uid] = "";
+
+	element["hint_action_" + this.uid] = click_action;
+}
+
+/** Creates a cloned element which mimics original element
+    appearence and position, but lies within another parent.
+    The original element is hidden unless delete() method is called.
+    The impostor element is not linked with the original, thus any
+    updates won"t be transfered after one has been created. */
+hint_tool.prototype.impostor_create = function (element, parent) {
+	/* 1. Store original visibility style to restore later */
+	const original_visibility = element.style.visibility;
+
+	/* 2. Clone the original element (deep clone to include children) */
+	const cloned = element.cloneNode(true);
+
+	/* 3. Hide the original element (preserving its space in the layout) */
+	element.style.visibility = "hidden";
+
+	/* 4. Remove any ID to prevent duplicate IDs in the DOM */
+	cloned.removeAttribute("id");
+
+	/* 5. Append the clone to the specified target parent */
+	parent.appendChild(cloned);
+
+	/* 6. Track original element position */
+	const position_tracker = setInterval(function() {
+		const rect = element.getBoundingClientRect();
+		cloned.style.top = rect.top + "px";
+		cloned.style.left = rect.left + "px";
+
+		cloned.style.position  = "fixed";
+		cloned.style.width  = `${rect.width}px`;
+		cloned.style.height = `${rect.height}px`;
+		cloned.style.margin = 0;
+	}, 0);
+
+
+	/* 7. Return an object with the remove and a reference to the clone */
+	return {
+		element: cloned,
+
+		remove: function() {
+			cloned.parentNode.removeChild(cloned);
+
+			/* Restore the original element"s visibility */
+			element.style.visibility = original_visibility;
+
+			/* Stop position tracker */
+			clearInterval(position_tracker);
+		}
+	};
+}
+
+/** Enters hint mode. Finds all element containing data-hint field,
+    and makes them a hint target */
+hint_tool.prototype.overlay_enable = function (parent) {
+	if (this.overlay) return; /* Already enabled */
+
+	this.overlay = document.createElement("div");
+	this.overlay.className = "hint_overlay_fade_in";
+	parent.appendChild(this.overlay);
+
+	/* Create impostor for each data-hint_ item */
+	document.querySelectorAll("[data-hint_" + this.uid + "]").forEach(item => {
+		item.impostor = this.impostor_create(item, parent);
+
+		if (item.classList.contains('hint_badge')) {
+			item.impostor.element.onclick = () => {
+				this.overlay_disable();
+			}
+		} else {
+			item.impostor.element.onclick = item["hint_action_" + this.uid];
+			item.impostor.element.classList.add("hint_target");
+		}
+
+		/* Impostor should not have hint property
+		   This prevents from false enumeration when removing hints */
+		delete item.impostor.element.dataset["hint_" + this.uid];
+	});
+}
+
+/** Return everything to normal */
+hint_tool.prototype.overlay_disable = function () {
+	/* Remove all impostors */
+	document.querySelectorAll("[data-hint_" + this.uid + "]").forEach((item, index) => {
+		item.impostor.remove();
+		delete item.impostor;
+	});
+
+	this.overlay.classList.add("hint_overlay_fade_out");
+	this.overlay.addEventListener("animationend", () => {
+		if (this.overlay.parentNode) {
+			this.overlay.parentNode.removeChild(this.overlay);
+		}
+
+		delete this.overlay;
+	});
+}
+
+/** Toggles hint on and off */
+hint_tool.prototype.overlay_toggle = function (parent) {
+	if (this.overlay == undefined) {
+		this.overlay_enable(parent);
+	} else {
+		this.overlay_disable();
+	}
+}
+
+/** Hint badge created at the top right screen corner */
+hint_tool.prototype.badge_create = function hint_badge_create(parent) {
+	const badge = document.createElement("div");
+	badge.classList.add("hint_badge");
+	badge.innerHTML = "&#128172"
+	parent.appendChild(badge);
+
+	/* Badge becomes a valid hint target */
+	badge.dataset["hint_" + this.uid] = "";
+
+	badge.onclick = () => {
+		this.overlay_enable(parent);
+
+		/* Remove hint target style */
+		badge.impostor.element.classList.remove("hint_target");
+
+		/* Override action */
+		badge.impostor.element.onclick = () => {
+			this.overlay_disable();
+		}
+	}
+
+	return badge;
+}
+
+/* Demo function */
+function hint_tool_demo ()
+{
+	/* Initialize hint tool */
+	const hint = new hint_tool("general");
+
+	/* Create badge at top right screen corner */
+	const badge = hint.badge_create(document.body);
+
+	/* Create normal elements */
+	const element1 = document.createElement("div");
+	element1.innerHTML = "This is an element without a hint!"
+	document.body.appendChild(element1);
+
+	const element2 = document.createElement("div");
+	element2.innerHTML = "This is an element WITH a hint!"
+	document.body.appendChild(element2);
+
+	/* Register hint for element2 */
+	hint.register(
+		element2,
+		function () { console.log("Hello Hint!");
+			      hint.overlay_disable(); }
+	);
+
+	return hint;
+}
+</script>
