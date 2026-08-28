@@ -175,10 +175,8 @@ hint_tool.prototype.overlay_enable = function (parent) {
 	document.querySelectorAll("[data-hint_" + this.uid + "]").forEach(item => {
 		item.impostor = this.impostor_create(item, parent);
 
-		if (item.classList.contains('hint_badge')) {
-			item.impostor.element.onclick = () => {
-				this.overlay_disable();
-			}
+		if (item.classList.contains("hint_custom")) {
+			/* Do not set any actions or styles on custom hints */
 		} else {
 			item.impostor.element.onclick = item["hint_action_" + this.uid];
 			item.impostor.element.classList.add("hint_target");
@@ -220,7 +218,12 @@ hint_tool.prototype.overlay_toggle = function (parent) {
 /** Hint badge created at the top right screen corner */
 hint_tool.prototype.badge_create = function hint_badge_create(parent) {
 	const badge = document.createElement("div");
-	badge.classList.add("hint_badge");
+
+	/* Custom hints can not have any actions or hint_target style applied
+	   by default */
+	badge.classList.add("hint_custom", "hint_badge");
+
+	/* "..." dialog badge */
 	badge.innerHTML = "&#128172"
 	parent.appendChild(badge);
 
@@ -230,10 +233,8 @@ hint_tool.prototype.badge_create = function hint_badge_create(parent) {
 	badge.onclick = () => {
 		this.overlay_enable(parent);
 
-		/* Remove hint target style */
-		badge.impostor.element.classList.remove("hint_target");
-
-		/* Override action */
+		/* "Overlay_enable" creates impostor for all hint targets,
+		    including badge element (see above) */
 		badge.impostor.element.onclick = () => {
 			this.overlay_disable();
 		}
