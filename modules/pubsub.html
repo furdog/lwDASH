@@ -1,0 +1,47 @@
+<script>
+	class pubsub {
+		constructor() {
+			this.events = {}
+		}
+
+		// Subscribe to an event
+		subscribe(event, callback) {
+			if (!this.events[event]) {
+				this.events[event] = []
+			}
+			this.events[event].push(callback)
+		}
+
+		// Unsubscribe from an event
+		unsubscribe(event, callback) {
+			if (!this.events[event]) return
+			this.events[event] = this.events[event].filter(
+				(fn) => fn !== callback,
+			)
+		}
+
+		// Publish an event
+		publish(event, data) {
+			if (!this.events[event]) return
+			this.events[event].forEach((callback) =>
+				callback(data),
+			)
+		}
+	}
+
+	// Usage
+	const broker = new pubsub()
+
+	// Subscribe to 'message' event
+	broker.subscribe("message", (data) => {
+		console.log(`Subscriber 1 received: ${data}`)
+	})
+
+	// Another subscription to 'message' event
+	broker.subscribe("message", (data) => {
+		console.log(`Subscriber 2 received: ${data}`)
+	})
+
+	// Publish the 'message' event
+	broker.publish("message", "Hello, Pub/Sub!")
+</script>

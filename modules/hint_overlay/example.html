@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+	<head>
+		<link rel="stylesheet" href="styles.css" />
+		<script src="script.js"></script>
+	</head>
+
+	<body>
+		<script>
+			/* Initialize hint tool */
+			const hint = new hint_tool("general")
+
+			/* Create badge at top right screen corner */
+			const badge = hint.badge_create(document.body)
+
+			/* Create normal elements */
+			const element1 = document.createElement("div")
+			element1.innerHTML =
+				"This is an element without a hint!"
+			document.body.appendChild(element1)
+
+			const element2 = document.createElement("div")
+			element2.innerHTML = "This is an element WITH a hint!"
+			document.body.appendChild(element2)
+
+			/* Register hint for element2 */
+			hint.register(element2, function () {
+				console.log("Hello Hint!")
+				hint.overlay_disable()
+			})
+		</script>
+	</body>
+</html>

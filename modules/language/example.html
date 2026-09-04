@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+	<head>
+		<script src="script.js"></script>
+	</head>
+
+	<body>
+		<!-- Existing empty elements -->
+		<div id="power_display"></div>
+		<div id="user_display"></div>
+		<div id="container"></div>
+
+		<script>
+			// Translation dictionary
+			const dict_en = {
+				LC_POWER: "Power output: <b>{{{0}}}</b> kWt",
+				LC_WELCOME: "Welcome back, <b>{{username}}</b>!",
+				LC_STATUS: "System Status: <span>{{status}}</span>",
+			}
+
+			// Example A: Attach to existing element with an Array ([15])
+			const power_el =
+				document.getElementById("power_display")
+			lc_attach(power_el, "LC_POWER", [15])
+
+			// Example B: Attach to existing element with an Object ({ username: "O'Connor" })
+			const user_el = document.getElementById("user_display")
+			lc_attach(user_el, "LC_WELCOME", {
+				username: "O'Connor <admin>",
+			})
+
+			// Example C: Create element dynamically and append to DOM
+			const status_el = lc_create_element("p", "LC_STATUS", {
+				status: "ONLINE",
+			})
+			document.getElementById("container").appendChild(
+				status_el,
+			)
+
+			// Apply translations to render all attached elements
+			lc_apply(dict_en)
+
+			// Change arguments dynamically and re-render instantly
+			lc_update(power_el, [50], dict_en)
+
+			// or with objects:
+			lc_update(user_el, { username: "Alexander" }, dict_en)
+		</script>
+	</body>
+</html>
