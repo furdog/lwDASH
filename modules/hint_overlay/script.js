@@ -1,7 +1,7 @@
 class hint_tool {
 	/** Unique identifier */
 	constructor(uid) {
-		this.uid = uid
+		this.uid = uid //crypto.randomUUID().replace(/-/g, "_")
 	}
 
 	/** Active overlay */

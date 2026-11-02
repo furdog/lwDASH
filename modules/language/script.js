@@ -1,3 +1,47 @@
+class lang_tool {
+	/** Unique identifier to link object with DOM globally */
+	_uuid = crypto.randomUUID().replace(/-/g, "_")
+	
+	/** @private default language variant */
+	_default_lang   = 'en';
+
+	/** @private preferred language variant (by user) */
+	_preferred_lang = 'en';
+
+	/** @private
+	    Language literals (can contain localization or service data) */
+	_literals = {};
+}
+
+/**
+ * Adds literals to global literals list. For example:
+ * this.add_literal("LC_UNDERSTOOD", {en:"understood", uk:"зрозуміло"});
+ *
+ * @param {string} name - literal global name
+ * @param {object} objects - Language objects in format:
+ * 	{langA:"translation", langB:"translation", ...}
+ */
+lang_tool.prototype.add_literal = function (name, objects)
+{
+	this._literals[name] = objects;
+}
+
+/**
+ * Sets default language (fallback && initial)
+ */
+lang_tool.prototype.set_default_lang = function (lang)
+{
+	this._default_lang = lang;
+}
+
+/**
+ * Sets preferred (by user) language
+ */
+lang_tool.prototype.set_preferred_lang = function (lang)
+{
+	this._lc_preferred_lang = lang;
+}
+
 /**
  * Escapes special HTML characters in a string to prevent XSS attacks.
  * Converts &, <, >, ", and ' to their corresponding HTML entities.
@@ -5,7 +49,7 @@
  * @param {string} text - The raw text to escape.
  * @returns {string} The HTML-safe string.
  */
-function lc_escape(text) {
+lang_tool.prototype.escape = function (text) {
 	return text
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
@@ -25,7 +69,7 @@ function lc_escape(text) {
  * @param {Object|Array} data - Map or array of values corresponding to placeholder keys.
  * @returns {string} The fully interpolated template string.
  */
-const lc_parse_template = (tpl, data) => {
+lang_tool.prototype.parse_template = function (tpl, data) {
 	// 1. {{{ key }}} - Do not escape HTML
 	let result = tpl.replace(/\{\{\{\s*(\w+)\s*\}\}\}/g, (_, key) =>
 		String(data[key] ?? ""),
@@ -44,7 +88,7 @@ const lc_parse_template = (tpl, data) => {
  * @param {string} key - Translation key matching data-lc.
  * @param {Array|Object} [args] - Arguments to store in data-lc_args.
  */
-function lc_attach(element, key, args = null) {
+lang_tool.prototype.attach = function (element, key, args = null) {
 	element.dataset.lc = key
 	element.dataset.lc_args = JSON.stringify(args ?? {})
 }
@@ -56,9 +100,9 @@ function lc_attach(element, key, args = null) {
  * @param {Array|Object} args - New arguments to update.
  * @param {Object} dict - Dictionary of key-value templates.
  */
-function lc_update(element, args, dict) {
+lang_tool.prototype.update = function (element, args) {
 	element.dataset.lc_args = JSON.stringify(args)
-	element.innerHTML = lc_parse_template(dict[element.dataset.lc], args)
+	element.innerHTML = this.parse_template(this._literals[element.dataset.lc], args)
 }
 
 /**
@@ -66,11 +110,11 @@ function lc_update(element, args, dict) {
  * @param {Object} dict - Dictionary of key-value templates
  * @param {HTMLElement|Document} root - Target container (defaults to whole document)
  */
-function lc_apply(dict, root = document) {
+lang_tool.prototype.apply = function (root = document) {
 	const elements = root.querySelectorAll("[data-lc]")
 
 	elements.forEach((element) => {
-		lc_update(element, JSON.parse(element.dataset.lc_args), dict)
+		this.update(element, JSON.parse(element.dataset.lc_args), this._literals)
 	})
 }
 
@@ -82,9 +126,9 @@ function lc_apply(dict, root = document) {
  * @param {Array|Object} [args] - Arguments to store in data-lc_args.
  * @returns {HTMLElement}
  */
-function lc_create_element(tag, key, args = null) {
+lang_tool.prototype.create_element = function (tag, key, args = null) {
 	const element = document.createElement(tag)
-	lc_attach(element, key, args)
+	this.attach(element, key, args)
 
 	return element
 }
